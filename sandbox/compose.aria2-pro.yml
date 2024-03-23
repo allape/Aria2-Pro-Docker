@@ -1,0 +1,52 @@
+name: kubespider
+services:
+  proxy:
+    build:
+      dockerfile: docker.tinyproxy.Dockerfile
+    networks:
+      - external
+      - internal
+    volumes:
+      - ./tinyproxy.conf:/etc/tinyproxy/tinyproxy.conf
+  http:
+    image: caddy:2.7.6
+    networks:
+      - external
+      - internal
+    ports:
+      - "6800:6800"
+      - "6880:6880"
+    volumes:
+      - ./caddy.http.Caddyfile:/etc/caddy/Caddyfile
+  app:
+    image: p3terx/aria2-pro
+    networks:
+      - internal
+      - external
+    environment:
+      - UMASK_SET=022
+      - RPC_SECRET=P3TERX
+      - RPC_PORT=6800
+      - LISTEN_PORT=6888
+      - DISK_CACHE=1024MB
+      - IPV6_MODE=false
+      - UPDATE_TRACKERS=true
+      - CUSTOM_TRACKER_URL=
+      - TZ=Asia/Shanghai
+      - http_proxy=http://proxy:8118
+      - https_proxy=http://proxy:8118
+      - no_proxy=localhost,127.0.0.1,0.0.0.0
+    volumes:
+      - ./config:/config
+      - ./downloads:/downloads
+    restart: unless-stopped
+  webui:
+    image: p3terx/ariang
+    restart: unless-stopped
+    command: --port 6880 --ipv6
+    networks:
+      - internal
+networks:
+  external:
+  internal:
+    internal: true

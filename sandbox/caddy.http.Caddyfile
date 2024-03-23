@@ -1,0 +1,7 @@
+:6800 {
+    reverse_proxy http://app:6800
+}
+
+:6880 {
+    reverse_proxy http://webui:6880
+}
